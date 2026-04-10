@@ -53,7 +53,7 @@ function App() {
     { title: 'My Profile', description: 'Personal portfolio website showcasing my skills, projects, and experience. Built with React and Vite for optimal performance and great user experience.', live: '#', github: 'https://github.com/ishdeveloper001-cmyk/portfolio' }
   ];
 
-  const languages = ['English', 'Kinyarwanda', 'Kiswahili'];
+  const languages = ['English', 'Kinyarwanda'];
 
   return (
     <Box sx={{ background: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #faf5ff 100%)', minHeight: '100vh', pb: 4, position: 'relative' }}>
