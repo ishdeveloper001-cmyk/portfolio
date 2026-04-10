@@ -2,8 +2,9 @@
 import { useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Container, Box, Grid, Typography, Avatar, Stack, Link, AppBar, Toolbar, Button, Drawer, Divider, IconButton } from '@mui/material';
-import { Phone, Email, LocationOn, GitHub, Menu, Close } from '@mui/icons-material';
+import { Phone, Email, LocationOn, GitHub, Menu, Close, Download } from '@mui/icons-material';
 import heroImg from './assets/hero.jpeg';
+import cvPdf from './assets/cv.pdf';
 
 function App() {
   const theme = useTheme();
@@ -75,13 +76,17 @@ function App() {
             </Typography>
           </Box>
 
-          {/* Navigation Links - Desktop */}
-          <Stack direction="row" spacing={{ xs: 0.25, md: 0.5 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
+          {/* Navigation Links - Desktop Only */}
+          <Stack direction="row" spacing={{ xs: 0.25, md: 0.5 }} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
             {navItems.map((item) => (
               <Button key={item.label} onClick={() => scrollToSection(item.ref)} sx={{ color: '#ffffff', fontWeight: 600, fontSize: { md: '0.75rem', lg: '0.85rem' }, px: { lg: 1 }, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' }, textTransform: 'none' }}>
                 {item.label}
               </Button>
             ))}
+            <Button component="a" href={cvPdf} download="ISHIMWE_JEAN_DAMOUR_CV.pdf" sx={{ color: '#ffffff', fontWeight: 600, fontSize: { md: '0.75rem', lg: '0.85rem' }, px: { lg: 1 }, ml: 1, backgroundColor: 'rgba(255, 255, 255, 0.25)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.35)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}>
+              <Download sx={{ fontSize: '0.95rem' }} />
+              Download CV
+            </Button>
           </Stack>
 
           {/* Mobile Menu Button */}
@@ -100,6 +105,11 @@ function App() {
                 {item.label}
               </Button>
             ))}
+            <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
+            <Button component="a" href={cvPdf} download="ISHIMWE_JEAN_DAMOUR_CV.pdf" fullWidth sx={{ color: '#ffffff', fontWeight: 600, fontSize: '0.95rem', py: 1.5, justifyContent: 'flex-start', pl: 3, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Download sx={{ fontSize: '1.2rem' }} />
+              Download CV
+            </Button>
           </Stack>
         </Box>
       </Drawer>
