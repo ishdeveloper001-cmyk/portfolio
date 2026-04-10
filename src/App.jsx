@@ -26,6 +26,115 @@ function App() {
     setMobileOpen(false);
   };
 
+  const downloadPortfolioAsPDF = () => {
+    // Load required libraries
+    const loadScript = (src) => {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    };
+
+    // Load both html2canvas and jsPDF
+    Promise.all([
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
+      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    ]).then(() => {
+      setTimeout(() => {
+        try {
+          const appBar = document.querySelector('[role="banner"]');
+          const navigationStack = document.getElementById('desktop-navigation');
+          const mobileMenuButton = document.getElementById('mobile-menu-button');
+          const headerSpacer = document.getElementById('header-spacer');
+          
+          // Store original styles
+          const originalAppBarPosition = appBar?.style.position;
+          const originalAppBarZIndex = appBar?.style.zIndex;
+          
+          // Change fixed to static
+          if (appBar) {
+            appBar.style.position = 'static';
+            appBar.style.zIndex = 'auto';
+          }
+          
+          // Hide navigation
+          if (navigationStack) navigationStack.style.display = 'none';
+          if (mobileMenuButton) mobileMenuButton.style.display = 'none';
+          if (headerSpacer) headerSpacer.style.display = 'none';
+
+          // Use html2canvas to convert page to image
+          const { html2canvas } = window;
+          const { jsPDF } = window.jspdf;
+          
+          html2canvas(document.body, {
+            allowTaint: true,
+            useCORS: false,
+            backgroundColor: '#ffffff',
+            scale: 2
+          }).then(canvas => {
+            const pdf = new jsPDF({
+              orientation: 'portrait',
+              unit: 'mm',
+              format: 'a4'
+            });
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+            const imgWidth = pageWidth - 20;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            let heightLeft = imgHeight;
+            let position = 10;
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+            pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+              position = heightLeft - imgHeight + 10;
+              pdf.addPage();
+              pdf.addImage(imgData, 'JPEG', 10, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+            }
+
+            pdf.save('ISHIMWE_JEAN_DAMOUR_Portfolio.pdf');
+
+            // Restore styles
+            if (appBar) {
+              appBar.style.position = originalAppBarPosition || 'fixed';
+              appBar.style.zIndex = originalAppBarZIndex || '1200';
+            }
+            if (navigationStack) navigationStack.style.display = 'flex';
+            if (mobileMenuButton) mobileMenuButton.style.display = 'flex';
+            if (headerSpacer) headerSpacer.style.display = 'block';
+          }).catch(error => {
+            console.error('Canvas error:', error);
+            alert('Error generating PDF. Please try again.');
+            
+            // Restore on error
+            if (appBar) {
+              appBar.style.position = originalAppBarPosition || 'fixed';
+              appBar.style.zIndex = originalAppBarZIndex || '1200';
+            }
+            if (navigationStack) navigationStack.style.display = 'flex';
+            if (mobileMenuButton) mobileMenuButton.style.display = 'flex';
+            if (headerSpacer) headerSpacer.style.display = 'block';
+          });
+        } catch (error) {
+          console.error('PDF generation error:', error);
+          alert('Error generating PDF. Please try again.');
+        }
+      }, 500);
+    }).catch(error => {
+      console.error('Failed to load libraries:', error);
+      alert('Failed to load PDF libraries. Please check your internet connection.');
+    });
+  };
+
   const navItems = [
     { label: 'About', ref: aboutRef },
     { label: 'Skills', ref: skillsRef },
@@ -77,20 +186,20 @@ function App() {
           </Box>
 
           {/* Navigation Links - Desktop Only */}
-          <Stack direction="row" spacing={{ xs: 0.25, md: 0.5 }} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
+          <Stack id="desktop-navigation" direction="row" spacing={{ xs: 0.25, md: 0.5 }} sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center' }}>
             {navItems.map((item) => (
               <Button key={item.label} onClick={() => scrollToSection(item.ref)} sx={{ color: '#ffffff', fontWeight: 600, fontSize: { md: '0.75rem', lg: '0.85rem' }, px: { lg: 1 }, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' }, textTransform: 'none' }}>
                 {item.label}
               </Button>
             ))}
-            <Button component="a" href={cvPdf} download="ISHIMWE_JEAN_DAMOUR_CV.pdf" sx={{ color: '#ffffff', fontWeight: 600, fontSize: { md: '0.75rem', lg: '0.85rem' }, px: { lg: 1 }, ml: 1, backgroundColor: 'rgba(255, 255, 255, 0.25)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.35)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px' }}>
+            <Button onClick={downloadPortfolioAsPDF} sx={{ color: '#ffffff', fontWeight: 600, fontSize: { md: '0.75rem', lg: '0.85rem' }, px: { lg: 1 }, ml: 1, backgroundColor: 'rgba(255, 255, 255, 0.25)', '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.35)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 0.5, borderRadius: '4px', cursor: 'pointer' }}>
               <Download sx={{ fontSize: '0.95rem' }} />
               Download CV
             </Button>
           </Stack>
 
           {/* Mobile Menu Button */}
-          <IconButton sx={{ display: { xs: 'flex', md: 'none' }, color: '#ffffff' }} onClick={() => setMobileOpen(!mobileOpen)}>
+          <IconButton id="mobile-menu-button" sx={{ display: { xs: 'flex', md: 'none' }, color: '#ffffff' }} onClick={() => setMobileOpen(!mobileOpen)}>
             {mobileOpen ? <Close /> : <Menu />}
           </IconButton>
         </Toolbar>
@@ -106,7 +215,7 @@ function App() {
               </Button>
             ))}
             <Divider sx={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', my: 1 }} />
-            <Button component="a" href={cvPdf} download="ISHIMWE_JEAN_DAMOUR_CV.pdf" fullWidth sx={{ color: '#ffffff', fontWeight: 600, fontSize: '0.95rem', py: 1.5, justifyContent: 'flex-start', pl: 3, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Button onClick={downloadPortfolioAsPDF} fullWidth sx={{ color: '#ffffff', fontWeight: 600, fontSize: '0.95rem', py: 1.5, justifyContent: 'flex-start', pl: 3, '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.15)' }, textTransform: 'none', display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
               <Download sx={{ fontSize: '1.2rem' }} />
               Download CV
             </Button>
@@ -115,7 +224,7 @@ function App() {
       </Drawer>
 
       {/* Spacer to account for fixed header */}
-      <Box sx={{ height: { xs: 65, sm: 75, md: 100 } }} />
+      <Box id="header-spacer" sx={{ height: { xs: 65, sm: 75, md: 100 } }} />
 
       <Container maxWidth="lg" sx={{ mt: { xs: 1, sm: 2, md: 3 }, px: { xs: 1.5, sm: 2, md: 3 }, position: 'relative', zIndex: 1 }}>
         <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
